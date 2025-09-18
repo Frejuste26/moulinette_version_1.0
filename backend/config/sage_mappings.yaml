@@ -1,0 +1,122 @@
+sage_x3:
+  columns:
+    TYPE_LIGNE: 0
+    NUMERO_SESSION: 1
+    NUMERO_INVENTAIRE: 2
+    RANG: 3
+    SITE: 4
+    QUANTITE: 5
+    QUANTITE_REELLE_IN_INPUT: 6
+    INDICATEUR_COMPTE: 7
+    CODE_ARTICLE: 8
+    EMPLACEMENT: 9
+    STATUT: 10
+    UNITE: 11
+    VALEUR: 12
+    ZONE_PK: 13
+    NUMERO_LOT: 14
+
+  validation:
+    required_line_types: ["E", "L", "S"]
+    min_columns: 15
+    max_file_size_mb: 16
+    cors:
+      enabled: true
+      allowed_origins:
+        - http://localhost:3000
+        - http://127.0.0.1:3000
+        - http://localhost:5173
+        - http://127.0.0.1:5173
+
+  processing:
+    aggregation_keys:
+      - CODE_ARTICLE
+      - NUMERO_INVENTAIRE
+      - STATUT
+      - EMPLACEMENT
+      - ZONE_PK
+      - UNITE
+
+    distribution_strategies:
+      - FIFO
+      - LIFO
+    # Si true, remplace les QUANTITE invalides par 0 lors du prétraitement
+    treat_invalid_quantity_as_zero: true
+
+  lot_patterns:
+    # Patterns pour les lots avec priorité (mis à jour selon la nouvelle logique)
+    type1_pattern: '^([A-Z0-9]{5})(\d{6})([A-Z0-9]{4})$'  # 5 caractères site + DDMMYY + 4 caractères (priorité 1)
+    type2_pattern: '^LOT\d{6}$'  # LOT + DDMMYY (priorité 2)
+    # Note: LOTECART est détecté automatiquement quand quantité théorique = 0 ET quantité réelle > 0
+    inventory_date_pattern: '(\d{2})(\d{2})INV'
+
+  # Liste des codes de site valides pour les lots priorité 1
+  priority1_site_codes:
+    - CANCB
+    - CANUA
+    - CB1CB
+    - CB1MA
+    - CB1PT
+    - CB1TV
+    - CB1TV
+    - CB1UA
+    - CB2CB
+    - CB2MA
+    - CB2PT
+    - CB2TV
+    - CB2TV
+    - CB1UA
+    - CDKMC
+    - CDKTV
+    - CKMA
+    - CKOCB
+    - CKOMA
+    - CKOPT
+    - CKOTY
+    - CKOTY
+    - CKQUA
+    - CPK05
+    - CPK06
+    - CPKCE
+    - CPKCJ
+    - CPKCO
+    - CPKMA
+    - CPKMC
+    - CPKPT
+    - CPKTV
+    - CPKTV
+    - CPKU1
+    - CPKU2
+    - CPKU3
+    - CPKU4
+    - CS1CB
+    - CS1MA
+    - CS1PT
+    - CS1TV
+    - CS1TV
+    - CS1UA
+    - CS2CB
+    - CS2MA
+    - CS2PT
+    - CS2TV
+    - CS2TV
+    - CS1UA
+    - CYKCB
+    - CYKMA
+    - CYKPT
+    - CYKTV
+    - CYKTV
+    - CYKUA
+    - SBACB
+    - SBAMA
+    - SBAPT
+    - SBATY
+    - SBAUY
+    - SBAUY
+
+  lot_priority:
+    # Ordre de priorité pour la répartition des écarts (seulement 2 types maintenant)
+    - type1 # Lots avec site + date (priorité maximale)
+    - type2 # Lots LOT + date (fallback)
+    - lotecart # Lots LOTECART (quantité théorique = 0, quantité réelle > 0)
+    - unknown # Lots non reconnus (dernier recours)
